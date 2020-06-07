@@ -61,4 +61,102 @@ class BinHeap <P extends Comparable<? super P>, D> {
         private P prio () { return entry.prio; }
     }
 
+
+    // Code
+
+    private int size;
+    private Node<P, D> head;
+
+
+    // Leere Halde erzeugen.
+    BinHeap()
+    {
+        head = null;
+    }
+
+
+    // Ist die Halde momentan leer?
+    boolean isEmpty()
+    {
+        return size() == 0;
+    }
+
+
+    // Größe der Halde, d. h. Anzahl momentan gespeicherter Einträge liefern.
+    int size()
+    {
+        return size;
+    }
+
+
+    // Enthält die Halde den Eintrag e?
+    boolean contains(Entry<P, D> e)
+    {
+        return false;
+    }
+
+
+    // Neuen Eintrag mit Priorität p und zusätzlichen Daten d erzeugen,
+    // zur Halde hinzufügen und zurückliefern.
+    Entry<P, D> insert (P p, D d)
+    {
+        return null;
+    }
+
+
+    // Priorität des Eintrags e auf p verändern.
+    // (Dabei darf auf keinen Fall ein neuer Eintrag entstehen, selbst wenn
+    // die Operation intern als Entfernen und Neu-Einfügen implementiert wird!)
+    boolean changePrio(Entry<P, D> e, P p)
+    {
+        return false;
+    }
+
+
+    // Einen Eintrag mit minimaler Priorität liefern.
+    Entry<P, D> minimum()
+    {
+        return null;
+    }
+
+
+    // Einen Eintrag mit minimaler Priorität liefern und aus der Halde entfernen.
+    Entry<P, D> extractMin()
+    {
+        return null;
+    }
+
+
+    // Eintrag e aus der Halde entfernen.
+    boolean remove(Entry<P, D> e)
+    {
+        return false;
+    }
+
+
+    // Inhalt der Halde zu Testzwecken ausgeben.
+    void dump()
+    {
+
+    }
+
+
+    // Hilfsmethoden
+
+
+    // Zusammenfassen zweier Bäume B1 und B2 mit Grad k
+    // zu einem Baum mit Grad k+1
+    private Node<P, D> mergeTrees(Node<P, D> root1, Node<P, D> root2)
+    {
+        return null;
+    }
+
+
+    // Vereinigen zweier Halden H1 und H2 zu einer neuen Halde H.
+    private BinHeap<P, D> mergeHeaps(BinHeap<P, D> heap1, BinHeap<P, D> heap2)
+    {
+        return null;
+    }
+
+
 }
