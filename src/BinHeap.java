@@ -189,10 +189,9 @@ class BinHeap <P extends Comparable<? super P>, D> {
             System.out.println(cur.entry.data().toString());
 
 
-            if (cur.child != null) dump(cur.child, cur.child, pDegree + 1);
+            if (cur.child != null) dump(cur.child.sibling, cur.child.sibling, pDegree + 1);
             if (cur.sibling == null) return;
             if (cur.sibling == start) return;
-            if (cur.sibling != null)
             dump(cur.sibling, start, pDegree);
 
 
