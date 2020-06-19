@@ -64,7 +64,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
     // Code
 
-    private int size;
+    private  int size;
     private Node<P, D> head;
 
 
@@ -72,6 +72,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
     BinHeap()
     {
         head = null;
+        size = 0;
     }
 
 
@@ -97,10 +98,26 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Neuen Eintrag mit Priorität p und zusätzlichen Daten d erzeugen,
-    // zur Halde hinzufügen und zurückliefern.
+    // zur Halde hinzufügen und zurückliefern. (siehe Seite 97)
     Entry<P, D> insert (P p, D d)
     {
-        return null;
+        if (p == null || d == null) return null;
+
+        // Temporäre Halde mit einem Knoten mit Grad 0
+        BinHeap<P, D> temp = new BinHeap<>();
+        Entry<P, D> e = new Entry<P, D>(p, d);
+        Node<P, D> n = new Node<P, D>(e);
+        n.degree = 0;
+        temp.head = n;
+        temp.size = 1;
+
+        // vereinigen
+        BinHeap<P, D> tempHead = mergeHeaps(this, temp);
+        head = tempHead.head;
+        size = tempHead.size;
+
+        //size++;
+        return e;
     }
 
 
@@ -135,8 +152,54 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Inhalt der Halde zu Testzwecken ausgeben.
-    void dump()
+    public void dump()
     {
+
+        if(head != null)
+        {
+            dump(head, head, 0);
+            /*Node<P, D> next = head.sibling;
+            while (next != null)
+            {
+                dump(next, head, 0);
+                next = next.sibling;
+            }*/
+
+        }
+
+        //pDegree = 0;
+
+
+
+    }
+
+    // Hilfsoperation für dump
+    private void dump(Node<P, D> cur,Node<P, D>  start, int pDegree)
+    {
+        // pDegree: Hilfe für korrekte Darstellung der Knotengrade (Whitespaces)
+        //Node<P, D> cur = n;
+
+
+            for(int i = 0; i < pDegree; i++)
+            {
+                System.out.print("  ");
+            }
+
+            System.out.print(cur.entry.prio().toString() + " ");
+            System.out.println(cur.entry.data().toString());
+
+
+            if (cur.child != null) dump(cur.child, cur.child, pDegree + 1);
+            if (cur.sibling == null) return;
+            if (cur.sibling == start) return;
+            if (cur.sibling != null)
+            dump(cur.sibling, start, pDegree);
+
+
+        //else if(cur.parent != null && cur.parent.sibling != null)
+        //{
+        //    if( cur.parent != cur.parent.sibling) dump(cur.parent.sibling, pDegree - 1);
+        //}
 
     }
 
@@ -145,17 +208,176 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Zusammenfassen zweier Bäume B1 und B2 mit Grad k
-    // zu einem Baum mit Grad k+1
-    private Node<P, D> mergeTrees(Node<P, D> root1, Node<P, D> root2)
+    // zu einem Baum mit Grad k+1 (siehe Folie 95)
+    private Node<P, D> mergeTrees(Node<P, D> b1, Node<P, D> b2)
     {
-        return null;
+        if (b1 == null || b2 == null) return null;
+
+        // 1
+        if (b1.entry.prio.compareTo(b2.entry.prio) > 0)
+        {
+
+            b2.sibling = null;
+            b2.degree = b2.degree + 1;
+            b1.parent = b2;
+            if (b2.child == null) b2.child = b1.sibling = b1;
+            else
+            {
+                b1.sibling = b2.child.sibling;
+                b2.child = b2.child.sibling = b1;
+            }
+            return b2;
+        }
+
+        // 2
+        else
+        {
+            b1.sibling = null;
+            b1.degree = b1.degree + 1;
+            b2.parent = b1;
+            if (b1.child == null) b1.child = b2.sibling = b2;
+            else
+            {
+                b2.sibling = b1.child.sibling;
+                b1.child = b1.child.sibling = b2;
+            }
+            return b1;
+        }
     }
 
 
-    // Vereinigen zweier Halden H1 und H2 zu einer neuen Halde H.
-    private BinHeap<P, D> mergeHeaps(BinHeap<P, D> heap1, BinHeap<P, D> heap2)
+    // Vereinigen zweier Halden H1 und H2 zu einer neuen Halde H. (siehe Folie 96)
+    private BinHeap<P, D> mergeHeaps(BinHeap<P, D> h1, BinHeap<P, D> h2)
     {
-        return null;
+        BinHeap<P, D> h = new BinHeap<>();
+        h.size = h1.size;
+
+        if (h1 == null || h2 == null) return null;
+        if (h1.isEmpty()) return h2;
+        if (h2.isEmpty()) return h1;
+
+        // 1
+        Node<P, D>[] trees = new Node[3];
+
+        // 2
+        int k = 0;
+
+        // 3
+        while (!h1.isEmpty() || !h2.isEmpty() || !(trees[0] == null && trees[1] == null && trees[2] == null))
+        {
+            // 3.1
+            if (h1.head != null)
+            {
+                if (h1.head.degree == k)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (trees[i] == null)
+                        {
+                            trees[i] = h1.head;
+
+                            break;
+                        }
+                    }
+                    h1.size -= Math.pow(2, h1.head.degree);
+                    h1.head = h1.head.sibling;
+
+                    //h.size++;
+                }
+            }
+            // 3.2
+            if (h2.head != null)
+            {
+                if (h2.head.degree == k)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (trees[i] == null)
+                        {
+                            trees[i] = h2.head;
+                            break;
+                        }
+                    }
+                    h2.size -= Math.pow(2, h2.head.degree);
+                    h2.head = h2.head.sibling;
+                    //h.size++;
+                }
+            }
+            // 3.3
+
+            int count = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                if (trees[i] != null)
+                {
+                    count++;
+                }
+            }
+
+            if (count == 1 || count == 3)
+            {
+                Node<P, D> take = null;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (trees[i] != null)
+                    {
+                        take = trees[i];
+                        trees[i] = null;
+                        break;
+                    }
+                }
+
+                if (h.head == null) h.head = take;
+                else
+                {
+                    Node<P, D> skipSib = h.head;
+                    while (skipSib.sibling != null) skipSib = skipSib.sibling;
+                    skipSib.sibling = take;
+                    break; // test
+                }
+            }
+
+            // 3.4
+            if (count == 2)
+            {
+                Node<P, D> tree1 = null, tree2 = null;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (trees[i] != null)
+                    {
+                        tree1 = trees[i];
+                        trees[i] = null;
+                        break;
+                    }
+                }
+                for (int i = 0; i < 3; i++)
+                {
+                    if (trees[i] != null)
+                    {
+                        tree2 = trees[i];
+                        trees[i] = null;
+                        break;
+                    }
+                }
+
+                Node<P, D> mTree = mergeTrees(tree1, tree2);
+                for (int i = 0; i < 3; i++)
+                {
+                    if (trees[i] == null)
+                    {
+                        trees[i] = mTree;
+                        break;
+                    }
+                }
+
+            }
+
+            // 3.5
+            k++;
+
+        }
+        h.size++;
+        return h;
     }
 
 
