@@ -87,30 +87,35 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Größe der Halde, d. h. Anzahl momentan gespeicherter Einträge liefern.
-    /*int size()
-    {
-        return size;
-    }*/
+
     public int size()
     {
         Node<P, D> next = head;
         int size = 0;
+        // Über Wurzeln Knoten aller Bäume addieren
         while (next != null)
         {
+            // siehe Folie 91 -> 2^k Knoten
             size += 1 << next.degree;
             next = next.sibling;
         }
         return size;
     }
+    /*int size()
+    {
+        return size;
+    }*/
+
 
     // Enthält die Halde den Eintrag e?
     boolean contains(Entry<P, D> e)
     {
         if (e == null) return false;
-
+        // zu Wurzelknoten von e
         Node<P, D> par = e.node;
         while (par.parent != null) par = par.parent;
 
+        // Überprüfen, ob Wurzelknoten mit einem Wurzelknoten dieser Halde gleich ist
         Node<P, D> cur = head;
 
         while(cur != null)
@@ -146,7 +151,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
     }
 
 
-    // Priorität des Eintrags e auf p verändern.
+    // Priorität des Eintrags e auf p verändern (siehe Folie 98).
     // (Dabei darf auf keinen Fall ein neuer Eintrag entstehen, selbst wenn
     // die Operation intern als Entfernen und Neu-Einfügen implementiert wird!)
     boolean changePrio(Entry<P, D> e, P p)
@@ -169,6 +174,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
         // normaler Knoten
         else
         {
+            // 1
             if (p.compareTo(e.prio) <= 0)
             {
                 // 1.1
@@ -185,33 +191,30 @@ class BinHeap <P extends Comparable<? super P>, D> {
                     e.node = e.node.parent;
                 }
             }
-                // 2
-                else
+            // 2
+            else
+            {
+                e.prio = p;
+                if (e.node.child != null)
                 {
-                    e.prio = p;
-                    if (e.node.child != null)
-                    {
-                        remove(e);
-                        //e.prio = p;
-                        insert(e.prio, e.data);
-                    }
+                    remove(e);
+                    //e.prio = p;
+                    insert(e.prio, e.data);
                 }
             }
-            return true;
-
-
-
         }
+        return true;
+    }
 
 
 
-    // Einen Eintrag mit minimaler Priorität liefern.
+    // Einen Eintrag mit minimaler Priorität liefern (siehe Folie 97).
     Entry<P, D> minimum()
     {
         if (head == null) return null;
 
         Node<P, D> next = head, min = head;
-
+        // in Wurzelliste Objekt mit minimaler Priorität finden
         while (next != null)
         {
             if (next.entry.negInf)
@@ -229,10 +232,11 @@ class BinHeap <P extends Comparable<? super P>, D> {
     Entry<P, D> extractMin()
     {
         // 1
+        // suchen
         Entry<P, D> min = minimum();
         if (min == null) return null;
 
-        // abkoppeln
+        // entfernen
         if (min.node == head)
         {
             head = head.sibling;
@@ -249,7 +253,6 @@ class BinHeap <P extends Comparable<? super P>, D> {
         // neue Halde mit Siblings erstellen und vereinen
         if (min.node.child != null)
         {
-            //Node<P, D> minDeg = min.node.child.sibling;
             BinHeap<P, D> h2 = new BinHeap<>();
             h2.head = min.node.child.sibling;
 
@@ -265,9 +268,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
             next.parent = null;
             next.sibling = null;
             //h2.head = hSave;
-            //h2.size = (int)Math.pow(2, h2.head.degree);
-            //if (head != null) size = (int)Math.pow(2, head.degree);
-            //else size = 0;
+
 
 
             BinHeap<P,D> temp = mergeHeaps(this, h2);
@@ -280,25 +281,23 @@ class BinHeap <P extends Comparable<? super P>, D> {
                 }
             }*/
 
-
-
-
             head = temp.head;
             //size = temp.size;
         }
-
 
         //size--;
         return min;
     }
 
 
-    // Eintrag e aus der Halde entfernen.
+    // Eintrag e aus der Halde entfernen (siehe Folie 98).
     boolean remove(Entry<P, D> e)
     {
         if (e == null || !contains(e)) return false;
+        // 1
         e.negInf = true;
         changePrio(e, e.prio);
+        // 2
         extractMin();
         return true;
     }
@@ -320,10 +319,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
         }
 
-        //pDegree = 0;
-
-
-
+        //pSpace = 0;
     }
 
 
@@ -333,13 +329,12 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Hilfsmethode für dump
-    private void dump(Node<P, D> cur,Node<P, D>  start, int pDegree)
+    private void dump(Node<P, D> cur,Node<P, D>  start, int pSpace)
     {
-        // pDegree: Hilfe für korrekte Darstellung der Knotengrade (Whitespaces)
         //Node<P, D> cur = n;
 
 
-        for(int i = 0; i < pDegree; i++)
+        for(int i = 0; i < pSpace; i++)
         {
             System.out.print("  ");
         }
@@ -348,22 +343,22 @@ class BinHeap <P extends Comparable<? super P>, D> {
         System.out.println(cur.entry.data().toString());
 
 
-        if (cur.child != null) dump(cur.child.sibling, cur.child.sibling, pDegree + 1);
+        if (cur.child != null) dump(cur.child.sibling, cur.child.sibling, pSpace + 1);
         if (cur.sibling == null) return;
         if (cur.sibling == start) return;
-        dump(cur.sibling, start, pDegree);
+        dump(cur.sibling, start, pSpace);
 
 
         //else if(cur.parent != null && cur.parent.sibling != null)
         //{
-        //    if( cur.parent != cur.parent.sibling) dump(cur.parent.sibling, pDegree - 1);
+        //    if( cur.parent != cur.parent.sibling) dump(cur.parent.sibling, pSpace - 1);
         //}
 
     }
 
 
     // Zusammenfassen zweier Bäume B1 und B2 mit Grad k
-    // zu einem Baum mit Grad k+1 (siehe Folie 95)
+    // zu einem Baum mit Grad k+1 (siehe Folie 95).
     private Node<P, D> mergeTrees(Node<P, D> b1, Node<P, D> b2)
     {
         if (b1 == null || b2 == null) return null;
@@ -401,15 +396,12 @@ class BinHeap <P extends Comparable<? super P>, D> {
     }
 
 
-    // Vereinigen zweier Halden H1 und H2 zu einer neuen Halde H. (siehe Folie 96)
+    // Vereinigen zweier Halden H1 und H2 zu einer neuen Halde H (siehe Folie 96).
     private BinHeap<P, D> mergeHeaps(BinHeap<P, D> h1, BinHeap<P, D> h2)
     {
         BinHeap<P, D> h = new BinHeap<>();
         //h.size = h1.size;
-
         if (h1 == null || h2 == null) return null;
-        if (h1.isEmpty()) return h2;
-        if (h2.isEmpty()) return h1;
 
         // 1
         Node<P, D>[] trees = new Node[3];
@@ -548,7 +540,4 @@ class BinHeap <P extends Comparable<? super P>, D> {
         //h.size++;
         return h;
     }
-
-
-
 }
