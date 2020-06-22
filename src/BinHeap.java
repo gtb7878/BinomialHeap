@@ -15,6 +15,9 @@ class BinHeap <P extends Comparable<? super P>, D> {
         private D data;
         private Node<P, D> node;
 
+        // zum Rausschieben
+        private boolean negInf = false;
+
         // Eintrag mit Priorität p und zusätzlichen Daten d erzeugen.
         private Entry (P p, D d) {
             prio = p;
@@ -64,7 +67,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
     // Code
 
-    private  int size;
+    //private  int size;
     private Node<P, D> head;
 
 
@@ -72,7 +75,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
     BinHeap()
     {
         head = null;
-        size = 0;
+        //size = 0;
     }
 
 
@@ -84,15 +87,37 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
 
     // Größe der Halde, d. h. Anzahl momentan gespeicherter Einträge liefern.
-    int size()
+    /*int size()
     {
         return size;
+    }*/
+    public int size()
+    {
+        Node<P, D> next = head;
+        int size = 0;
+        while (next != null)
+        {
+            size += 1 << next.degree;
+            next = next.sibling;
+        }
+        return size;
     }
-
 
     // Enthält die Halde den Eintrag e?
     boolean contains(Entry<P, D> e)
     {
+        if (e == null) return false;
+
+        Node<P, D> par = e.node;
+        while (par.parent != null) par = par.parent;
+
+        Node<P, D> cur = head;
+
+        while(cur != null)
+        {
+            if (cur == par) return true;
+            cur = cur.sibling;
+        }
         return false;
     }
 
@@ -109,12 +134,12 @@ class BinHeap <P extends Comparable<? super P>, D> {
         Node<P, D> n = new Node<P, D>(e);
         n.degree = 0;
         temp.head = n;
-        temp.size = 1;
+        //temp.size = 1;
 
         // vereinigen
         BinHeap<P, D> tempHead = mergeHeaps(this, temp);
         head = tempHead.head;
-        size = tempHead.size;
+        //size = tempHead.size;
 
         //size++;
         return e;
@@ -126,28 +151,156 @@ class BinHeap <P extends Comparable<? super P>, D> {
     // die Operation intern als Entfernen und Neu-Einfügen implementiert wird!)
     boolean changePrio(Entry<P, D> e, P p)
     {
-        return false;
-    }
+        if (e == null || p == null || !contains(e)) return false;
+        // wenn löschen, zu löschender Knoten als head
+        if (e.negInf)
+        {
+            while (e.node.parent != null)
+            {
+                e.node.entry = e.node.parent.entry;
+
+                e.node.parent.entry = e;
+                e.node.entry.node = e.node;
+                e.node = e.node.parent;
+            }
+            return true;
+        }
+
+        // normaler Knoten
+        else
+        {
+            if (p.compareTo(e.prio) <= 0)
+            {
+                // 1.1
+                e.prio = p;
+
+                // 1.2
+                while (e.node.parent != null)
+                {
+                    if (e.prio.compareTo(e.node.parent.entry.prio) < 0)
+                    {
+                        e.node.entry = e.node.parent.entry;
+                        e.node.parent.entry = e;
+                    }
+                    e.node = e.node.parent;
+                }
+            }
+                // 2
+                else
+                {
+                    e.prio = p;
+                    if (e.node.child != null)
+                    {
+                        remove(e);
+                        //e.prio = p;
+                        insert(e.prio, e.data);
+                    }
+                }
+            }
+            return true;
+
+
+
+        }
+
 
 
     // Einen Eintrag mit minimaler Priorität liefern.
     Entry<P, D> minimum()
     {
-        return null;
+        if (head == null) return null;
+
+        Node<P, D> next = head, min = head;
+
+        while (next != null)
+        {
+            if (next.entry.negInf)
+            {
+                return next.entry;
+            }
+            if (min.entry.prio.compareTo(next.entry.prio) > 0) min = next;
+            next = next.sibling;
+        }
+        return min.entry;
     }
 
 
-    // Einen Eintrag mit minimaler Priorität liefern und aus der Halde entfernen.
+    // Einen Eintrag mit minimaler Priorität liefern und aus der Halde entfernen (siehe Folie 97).
     Entry<P, D> extractMin()
     {
-        return null;
+        // 1
+        Entry<P, D> min = minimum();
+        if (min == null) return null;
+
+        // abkoppeln
+        if (min.node == head)
+        {
+            head = head.sibling;
+        }
+        else
+        {
+            Node<P, D> next = head;
+            while (next.sibling != min.node) next = next.sibling;
+            next.sibling = min.node.sibling;
+        }
+
+        // 2
+
+        // neue Halde mit Siblings erstellen und vereinen
+        if (min.node.child != null)
+        {
+            //Node<P, D> minDeg = min.node.child.sibling;
+            BinHeap<P, D> h2 = new BinHeap<>();
+            h2.head = min.node.child.sibling;
+
+            h2.head.parent = null;
+            Node<P, D> next = h2.head.sibling;
+            next.parent = null;
+            //Node<P, D> hSave = next;
+            while (next.sibling != h2.head)
+            {
+                next.parent = null;
+                next = next.sibling;
+            }
+            next.parent = null;
+            next.sibling = null;
+            //h2.head = hSave;
+            //h2.size = (int)Math.pow(2, h2.head.degree);
+            //if (head != null) size = (int)Math.pow(2, head.degree);
+            //else size = 0;
+
+
+            BinHeap<P,D> temp = mergeHeaps(this, h2);
+            /*next = temp.head;
+            if (next.sibling != null){
+                while (next.sibling.sibling != null && next.sibling != next.sibling.sibling)
+                {
+                    next.parent = null;
+                    next = next.sibling;
+                }
+            }*/
+
+
+
+
+            head = temp.head;
+            //size = temp.size;
+        }
+
+
+        //size--;
+        return min;
     }
 
 
     // Eintrag e aus der Halde entfernen.
     boolean remove(Entry<P, D> e)
     {
-        return false;
+        if (e == null || !contains(e)) return false;
+        e.negInf = true;
+        changePrio(e, e.prio);
+        extractMin();
+        return true;
     }
 
 
@@ -173,26 +326,32 @@ class BinHeap <P extends Comparable<? super P>, D> {
 
     }
 
-    // Hilfsoperation für dump
+
+
+
+    // Hilfsmethoden
+
+
+    // Hilfsmethode für dump
     private void dump(Node<P, D> cur,Node<P, D>  start, int pDegree)
     {
         // pDegree: Hilfe für korrekte Darstellung der Knotengrade (Whitespaces)
         //Node<P, D> cur = n;
 
 
-            for(int i = 0; i < pDegree; i++)
-            {
-                System.out.print("  ");
-            }
+        for(int i = 0; i < pDegree; i++)
+        {
+            System.out.print("  ");
+        }
 
-            System.out.print(cur.entry.prio().toString() + " ");
-            System.out.println(cur.entry.data().toString());
+        System.out.print(cur.entry.prio().toString() + " ");
+        System.out.println(cur.entry.data().toString());
 
 
-            if (cur.child != null) dump(cur.child.sibling, cur.child.sibling, pDegree + 1);
-            if (cur.sibling == null) return;
-            if (cur.sibling == start) return;
-            dump(cur.sibling, start, pDegree);
+        if (cur.child != null) dump(cur.child.sibling, cur.child.sibling, pDegree + 1);
+        if (cur.sibling == null) return;
+        if (cur.sibling == start) return;
+        dump(cur.sibling, start, pDegree);
 
 
         //else if(cur.parent != null && cur.parent.sibling != null)
@@ -201,9 +360,6 @@ class BinHeap <P extends Comparable<? super P>, D> {
         //}
 
     }
-
-
-    // Hilfsmethoden
 
 
     // Zusammenfassen zweier Bäume B1 und B2 mit Grad k
@@ -249,7 +405,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
     private BinHeap<P, D> mergeHeaps(BinHeap<P, D> h1, BinHeap<P, D> h2)
     {
         BinHeap<P, D> h = new BinHeap<>();
-        h.size = h1.size;
+        //h.size = h1.size;
 
         if (h1 == null || h2 == null) return null;
         if (h1.isEmpty()) return h2;
@@ -278,7 +434,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
                             break;
                         }
                     }
-                    h1.size -= Math.pow(2, h1.head.degree);
+                    //h1.size -= Math.pow(2, h1.head.degree);
                     h1.head = h1.head.sibling;
 
                     //h.size++;
@@ -297,8 +453,9 @@ class BinHeap <P extends Comparable<? super P>, D> {
                             break;
                         }
                     }
-                    h2.size -= Math.pow(2, h2.head.degree);
+                    //h2.size -= Math.pow(2, h2.head.degree);
                     h2.head = h2.head.sibling;
+
                     //h.size++;
                 }
             }
@@ -321,6 +478,7 @@ class BinHeap <P extends Comparable<? super P>, D> {
                     if (trees[i] != null)
                     {
                         take = trees[i];
+                        take.sibling = null;
                         trees[i] = null;
                         break;
                     }
@@ -332,11 +490,23 @@ class BinHeap <P extends Comparable<? super P>, D> {
                     Node<P, D> skipSib = h.head;
                     while (skipSib.sibling != null) skipSib = skipSib.sibling;
                     skipSib.sibling = take;
-                    break; // test
+                    //break; // test
                 }
             }
 
             // 3.4
+            if (count != 2)
+            {
+                count = 0;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (trees[i] != null)
+                    {
+                        count++;
+                    }
+                }
+            }
+
             if (count == 2)
             {
                 Node<P, D> tree1 = null, tree2 = null;
@@ -375,9 +545,10 @@ class BinHeap <P extends Comparable<? super P>, D> {
             k++;
 
         }
-        h.size++;
+        //h.size++;
         return h;
     }
+
 
 
 }
