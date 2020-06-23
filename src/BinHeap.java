@@ -186,8 +186,8 @@ class BinHeap <P extends Comparable<? super P>, D> {
                     if (e.prio.compareTo(e.node.parent.entry.prio) < 0)
                     {
                         e.node.entry = e.node.parent.entry;
-                        e.node.parent.entry = e;
                         e.node.entry.node = e.node;
+                        e.node.parent.entry = e;
 
                         e.node = e.node.parent;
                     }
