@@ -163,9 +163,9 @@ class BinHeap <P extends Comparable<? super P>, D> {
             while (e.node.parent != null)
             {
                 e.node.entry = e.node.parent.entry;
-
                 e.node.parent.entry = e;
                 e.node.entry.node = e.node;
+
                 e.node = e.node.parent;
             }
             return true;
@@ -187,20 +187,26 @@ class BinHeap <P extends Comparable<? super P>, D> {
                     {
                         e.node.entry = e.node.parent.entry;
                         e.node.parent.entry = e;
+                        e.node.entry.node = e.node;
+
+                        e.node = e.node.parent;
                     }
-                    e.node = e.node.parent;
+                    else break;
+
+
                 }
             }
             // 2
             else
             {
-                e.prio = p;
                 if (e.node.child != null)
                 {
                     remove(e);
-                    //e.prio = p;
+                    e.prio = p;
                     insert(e.prio, e.data);
                 }
+                else e.prio = p;
+
             }
         }
         return true;
