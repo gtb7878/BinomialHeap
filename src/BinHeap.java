@@ -163,8 +163,8 @@ class BinHeap <P extends Comparable<? super P>, D> {
             while (e.node.parent != null)
             {
                 e.node.entry = e.node.parent.entry;
-                e.node.parent.entry = e;
                 e.node.entry.node = e.node;
+                e.node.parent.entry = e;
 
                 e.node = e.node.parent;
             }
