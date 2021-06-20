@@ -6,6 +6,9 @@ Die Ausgabestruktur ist wie folgt festgelegt:<br>
 Oben ist das Element mit niedrigster Priorität.
 Komplett ausgerückte Elemente sind Wurzeln, darunter eingerückte Elemente die jeweiligen Kinder.
 
+## Ausführung:
+> java BinHeapTest
+
 ## Befehle:
 * \+ \<prio>: Element mit Priorität *prio* einfügen
 * \- \<data>: Element mit Inhalt *data* entfernen
